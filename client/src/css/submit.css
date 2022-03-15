@@ -1,0 +1,17 @@
+.submit-info {
+    display: flex;
+    column-gap: calc(var(--navigation-margin) * 2);
+    margin: var(--margin) 0;
+}
+
+.choose-file {
+    margin-top: var(--margin);
+    max-width: 100%;
+}
+
+@media only screen and (max-width:400px) {
+    .submit-info {
+        flex-direction: column;
+        row-gap: var(--content-margin);
+    }
+}
