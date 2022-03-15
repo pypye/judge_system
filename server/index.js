@@ -25,6 +25,6 @@ app.use(session({
 }))
 
 require('./api/session.js')(app, database)
-
+require('./api/problems_service.js')(app, database)
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`));
