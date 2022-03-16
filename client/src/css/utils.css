@@ -116,6 +116,7 @@ table tr th {
 
 .text-heading {
     font-weight: var(--text-bold);
+    margin: var(--margin) 0;
 }
 
 .text-input {

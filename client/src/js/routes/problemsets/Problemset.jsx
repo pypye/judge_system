@@ -11,9 +11,10 @@ import Table from '../../components/utils/Table'
 import TableRow from '../../components/utils/TableRow'
 import TableCell from '../../components/utils/TableCell'
 import TableCellHead from '../../components/utils/TableCellHead'
-import ProblemsetAdd from './problemset_add/ProblemsetAdd'
+import { SessionContext } from '../../context'
 
 function Problemset() {
+    const user = React.useContext(SessionContext)
 
     React.useEffect(() => {
         document.title = "Problemset"
@@ -25,10 +26,7 @@ function Problemset() {
             <Header />
             <SubNavigation />
             <Content>
-                <LeftSide>
-                    <LeftSideComponent admin>
-                        <ProblemsetAdd />
-                    </LeftSideComponent>
+                <LeftSide width={user.is_admin !== 1 && "100%"}>
                     <LeftSideComponent>
                         <Table>
                             <TableRow>
@@ -38,10 +36,17 @@ function Problemset() {
                         </Table>
                     </LeftSideComponent>
                 </LeftSide>
-                <RightSide>
-                    <RightSideComponent>
-                    </RightSideComponent>
-                </RightSide>
+                {user.is_admin === 1 &&
+                    <RightSide>
+                        <RightSideComponent>
+                            <form action='/problemsets/create'>
+                                <button className='btn-submit' type='submit'>Create problemset</button>
+                            </form>
+                            
+                        </RightSideComponent>
+                    </RightSide>
+                }
+
             </Content>
         </div>
     )

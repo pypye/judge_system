@@ -7,7 +7,7 @@ import 'katex/dist/katex.min.css'
 
 MdEditor.use(Plugins.TabInsert, { tabMapValue: 1 });
 
-function StatementNormalRow(props) {
+function MarkdownArea(props) {
     return (
         <div className='flex-vertical'>
             <div>{props.title}</div>
@@ -18,4 +18,4 @@ function StatementNormalRow(props) {
         </div>
     )
 }
-export default StatementNormalRow
+export default MarkdownArea

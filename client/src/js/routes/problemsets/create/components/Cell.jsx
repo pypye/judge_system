@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import { ProblemsetInfoContext } from '../../../../context'
 
-function GeneralRow(props) {
+function Cell(props) {
     const { info, setInfo } = React.useContext(ProblemsetInfoContext)
 
     const onInfoChange = (type, value) => {
@@ -28,4 +28,4 @@ function GeneralRow(props) {
 
     )
 }
-export default GeneralRow
+export default Cell
