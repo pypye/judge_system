@@ -1,4 +1,4 @@
-import { AiFillHome, AiFillTrophy } from 'react-icons/ai'
+import { AiFillHome } from 'react-icons/ai'
 import { IoNewspaperOutline } from 'react-icons/io5'
 import { BsFillGrid3X3GapFill } from 'react-icons/bs'
 import { GrUserAdmin } from 'react-icons/gr'
@@ -16,13 +16,13 @@ function Navigation(props) {
             <div className="nav">
                 <NavigationComponent path="/" title="Home" uppercase />
                 <NavigationComponent path="/problemsets" title="Problemsets" uppercase />
-                {user.is_admin === 1 && <NavigationComponent path="/admin" title="Admin Area" uppercase />}
+                {user.is_admin === 1 && <NavigationComponent path="/admin" title="Management" uppercase />}
             </div>
             <div className="nav-dropdown">
                 <Dropdown trigger={<Icon><BsFillGrid3X3GapFill /></Icon>} drop="center">
                     <DropdownComponent title="Home" icon={<AiFillHome />} href='/' />
                     <DropdownComponent title="Problemsets" icon={<IoNewspaperOutline />} href='/problemsets' />
-                    {user.is_admin === 1 && <DropdownComponent title="Admin Area" icon={<GrUserAdmin />} href="/admin" />}
+                    {user.is_admin === 1 && <DropdownComponent title="Management" icon={<GrUserAdmin />} href="/admin" />}
                 </Dropdown>
             </div>
 

@@ -4,22 +4,20 @@ import Header from "../../../components/headers/Header"
 import LeftSide from "../../../components/contents/LeftSide"
 import LeftSideComponent from "../../../components/contents/LeftSideComponent"
 
-import ProblemsetStatement from './contents/Statement'
-import ProblemsetGeneral from './contents/General'
-import ProblemsetTests from './contents/Tests'
-import ProblemsetPublish from './contents/Publish'
+import Statement from './contents/Statement'
+import General from './contents/General'
+import Publish from './contents/Publish'
 import { ProblemsetInfoContext } from '../../../context'
 import SubNavigation from '../../../components/headers/SubNavigation'
 
 function ProblemsetEdit() {
     const [info, setInfo] = React.useState({
         name: '',
-        input_file: 'stdin',
-        output_file: 'stdout',
-        pdf: true,
-        statement: {},
-        time_limit: 1000,
-        memory_limit: 256
+        file_input: 'stdin',
+        file_output: 'stdout',
+        example: [],
+        limit_time: 1000,
+        limit_memory: 256
     });
 
 
@@ -34,10 +32,12 @@ function ProblemsetEdit() {
             <Content>
                 <LeftSide width="100%">
                     <LeftSideComponent>
-                        <ProblemsetGeneral />
-                        <ProblemsetStatement />
-                        <ProblemsetTests />
-                        <ProblemsetPublish />
+                        <form>
+                            <General />
+                            <Statement />
+                            <Publish />
+                        </form>
+
                     </LeftSideComponent>
                 </LeftSide>
             </Content>

@@ -10,7 +10,7 @@ function Home() {
     })
 
     return (
-        <div>
+        <React.Fragment>
             <Header />
             <Content>
                 <LeftSide width="100%">
@@ -20,7 +20,7 @@ function Home() {
                 </LeftSide>
             </Content>
 
-        </div>
+        </React.Fragment>
 
     )
 }

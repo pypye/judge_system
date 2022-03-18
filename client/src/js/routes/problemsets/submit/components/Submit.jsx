@@ -9,10 +9,10 @@ function Submit() {
         setLanguage(event.target.value)
     }
     return (
-        <div ref={ref}>
-            <div className="text-heading">Nộp bài</div>
+        <form ref={ref}>
+            <div className="text-heading">Submit solution</div>
             <div className="submit-info">
-                <input className="text-input" placeholder="ID bài" type="text" />
+                <input className="text-input" placeholder="Problem ID" type="text" required/>
                 <select className="text-input" value={language} onChange={onLanguageChange}>
                     <option value="cpp">.cpp</option>
                     <option value="c">.c</option>
@@ -25,8 +25,8 @@ function Submit() {
                 <Editor height="calc(min(350px, max(150px, 100vh - 430px)))" options={{automaticLayout: true}} language={language} />
             </div>
 
-            <button type="submit" className="btn-submit">Nộp bài</button>
-        </div>
+            <button type="submit" className="btn-submit">Submit</button>
+        </form>
     )
 }
 export default Submit

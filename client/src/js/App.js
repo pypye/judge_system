@@ -6,7 +6,7 @@ import Home from './routes/main/Home'
 import Problemset from './routes/problemsets/Problemset'
 import ProblemsetStandings from './routes/problemsets/ProblemsetStandings'
 import ProblemsetStatus from './routes/problemsets/ProblemsetStatus'
-import ProblemsetSubmit from './routes/problemsets/ProblemsetSubmit'
+import ProblemsetSubmit from './routes/problemsets/submit/ProblemsetSubmit'
 import ProblemsetCreate from './routes/problemsets/create/ProblemsetCreate'
 import { SessionContext } from './context'
 

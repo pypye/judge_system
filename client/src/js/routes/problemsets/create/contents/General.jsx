@@ -1,25 +1,22 @@
-import Cell from '../components/Cell'
+import GeneralInfo from '../components/GeneralInfo'
 import React from 'react'
-function ProblemsetGeneral() {
-
+function General() {
+    
     return (
-        <div>
+        <React.Fragment>
             <div className="text-heading">General info</div>
             <table>
                 <tbody>
-                   
-                    <Cell title="Name" type='name' />
+                    <GeneralInfo title="Name" type='name' />
             
-                    <Cell title="Input file" type='input_file' annotation='Input file name or "stdin" for standard input' />
-                    <Cell title="Output file" type='output_file' annotation='Output file name or "stdout" for standard output' />
+                    <GeneralInfo title="Input file" type='file_input' annotation='Input file name or "stdin" for standard input' />
+                    <GeneralInfo title="Output file" type='file_output' annotation='Output file name or "stdout" for standard output' />
                 
-                    <Cell title="Time limit" type='time_limit' annotation='Time limit per test (between 250 ms and 15000 ms)' ext="ms" />
-                    <Cell title="Memory limit" type='memory_limit' annotation='Memory limit (between 4 MB and 1024 MB)' ext="MB" />
-                    
-
+                    <GeneralInfo title="Time limit" type='limit_time' annotation='Time limit per test (between 250 ms and 15000 ms)' ext="ms" />
+                    <GeneralInfo title="Memory limit" type='limit_memory' annotation='Memory limit per test (between 4 MB and 1024 MB)' ext="MB" />
                 </tbody>
             </table>
-        </div>
+        </React.Fragment>
     )
 }
-export default ProblemsetGeneral
+export default General

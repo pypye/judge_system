@@ -1,7 +1,7 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { ProblemsetInfoContext } from '../../../../context'
 
-function Cell(props) {
+function GeneralInfo(props) {
     const { info, setInfo } = React.useContext(ProblemsetInfoContext)
 
     const onInfoChange = (type, value) => {
@@ -18,7 +18,7 @@ function Cell(props) {
                     <div>
                         <input className="text-input"
                             type="text" value={info[props.type]}
-                            onChange={(e) => onInfoChange(props.type, e.target.value)} autoComplete='true' required />
+                            onChange={(e) => onInfoChange(props.type, e.target.value)} autoComplete='true' required/>
                         &nbsp;{props.ext}
                     </div>
                     <div className='text-annotation'>{props.annotation}</div>
@@ -28,4 +28,4 @@ function Cell(props) {
 
     )
 }
-export default Cell
+export default GeneralInfo

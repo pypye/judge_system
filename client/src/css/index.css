@@ -17,6 +17,12 @@ a {
     text-decoration: none;
 }
 
+textarea {
+    resize: none;
+    width: 95%;
+}
+
+
 :root {
     --debug-border: 1px solid black;
 
