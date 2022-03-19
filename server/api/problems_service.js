@@ -1,8 +1,11 @@
 const uploadFile = require("../middleware/upload");
+const uploadFilePro = require("../middleware/upload_single");
 var path = require('path');
 const fs = require("fs");
-const baseUrl = "http://localhost:3000/files/";
 const problem_url = "/resources/static/assets/uploads/problem/"
+const admz = require('adm-zip')
+var sqlite = require("better-sqlite3");
+var db = new sqlite('./data/database.db');
 
 module.exports = function (app, database) {
 
@@ -43,21 +46,24 @@ module.exports = function (app, database) {
 
         const problem_name = req.body.problem_name
         const level = req.body.level    
+        const problem_input = req.body.problem_input
+        const problem_output = req.body.problem_output
+        const memory = req.body.memory
+        const time_limit = req.body.time_limit
         
         if (req.session.username) {
             if (req.session.role == 1){
                 var newPath = __basedir + problem_url + problem_name + "/"
                 var inputPath = newPath + "input/"
                 var outputPath = newPath + "output/"
-                database.all(`INSERT INTO problems (problem_name, level) VALUES ('${problem_name}',  '${level}')`, function (err, data) {
-                    res.send({ success: true, message: 'Thêm thành công' })
-                })
+                db.prepare(`INSERT INTO problems (problem_name, level, problem_input, problem_output, memory, time_limit) VALUES ('${problem_name}',  '${level}', '${problem_input}',  '${problem_output}', ${memory},  ${time_limit})`).run()
                 
                 if (!fs.existsSync(newPath)){
                     fs.mkdirSync(newPath)
                     fs.mkdirSync(inputPath)
                     fs.mkdirSync(outputPath)
                   }
+                res.send({ success: true, message: 'Thêm thành công' })
             }
             else res.send({ success: false, message: 'Không được cấp quyền' })
         }
@@ -66,16 +72,19 @@ module.exports = function (app, database) {
         }
     })
 
-    app.delete('/problem/:name', (req, res) => {
-        var oldPath = __basedir + problem_url + req.params.name
-        if (!fs.existsSync(oldPath)) {
-            res.send({ success: false, message: 'File không tồn tại' })
-            return
-        }
+    app.delete('/problem/:problemId', (req, res) => {
         if (req.session.username) {
+            problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+            if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+            problem = problem[0].problem_name
+            var oldPath = __basedir + problem_url + problem
+            if (!fs.existsSync(oldPath)) {
+                res.send({ success: false, message: 'File không tồn tại' })
+                return
+            }
             if (req.session.role == 1){
                 fs.rmSync(oldPath, { recursive: true, force: true });
-                database.run(`DELETE FROM problems WHERE problem_name=?`, req.params.name, function (err) {
+                database.run(`DELETE FROM problems WHERE problem_name=?`, problem, function (err) {
                     res.send({ success: true, message: 'Xóa thành công' })
                 })
             }
@@ -86,37 +95,40 @@ module.exports = function (app, database) {
         }
     })
 
-    app.put('/problem/:name', (req, res) => {
-        var oldPath = __basedir + problem_url + req.params.name
-        if (!fs.existsSync(oldPath)) {
-            res.send({ success: false, message: 'File không tồn tại' })
-            return
-        }
-        const problem_name = req.body.problem_name
-        const level = req.body.level
-        if (req.session.username) {
-            let data = [problem_name, level, req.params.name]
-            if (req.session.role == 1){
-                database.run(`UPDATE problems SET problem_name=?, level=? WHERE problem_name=?`, data, function (err) {
-                    res.send({ success: true, message: 'Sửa thành công' })
-                })
+    // app.put('/problem/:name', (req, res) => {
+    //     var oldPath = __basedir + problem_url + req.params.name
+    //     if (!fs.existsSync(oldPath)) {
+    //         res.send({ success: false, message: 'File không tồn tại' })
+    //         return
+    //     }
+    //     const problem_name = req.body.problem_name
+    //     const level = req.body.level
+    //     if (req.session.username) {
+    //         let data = [problem_name, level, req.params.name]
+    //         if (req.session.role == 1){
+    //             database.run(`UPDATE problems SET problem_name=?, level=? WHERE problem_name=?`, data, function (err) {
+    //                 res.send({ success: true, message: 'Sửa thành công' })
+    //             })
                 
-                var newPath = __basedir + problem_url + problem_name
+    //             var newPath = __basedir + problem_url + problem_name
 
-                fs.rename(oldPath, newPath, function (err) {
-                    if (err) throw err
-                })
-            }
-            else res.send({ success: false, message: 'Không được cấp quyền' })
-        }
-        else {
-            res.send({ logged_in: false })
-        }
-    })
+    //             fs.rename(oldPath, newPath, function (err) {
+    //                 if (err) throw err
+    //             })
+    //         }
+    //         else res.send({ success: false, message: 'Không được cấp quyền' })
+    //     }
+    //     else {
+    //         res.send({ logged_in: false })
+    //     }
+    // })
 
     // http://localhost:3001/problem/upload/ATSM
-    app.post('/problem/upload/:name',async (req, res) => {
-        var oldPath = __basedir + problem_url + req.params.name
+    app.post('/problem/upload/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
+        var oldPath = __basedir + problem_url + problem
         if (!fs.existsSync(oldPath)) {
             res.send({ success: false, message: 'File không tồn tại' })
             return
@@ -124,14 +136,14 @@ module.exports = function (app, database) {
         if (req.session.username) {
             if (req.session.role == 1){
                 try {
-                    await uploadFile(req, res);
+                    await uploadFilePro(req, res);
                 
-                    if (req.files == undefined) {
+                    if (req.file == undefined) {
                       return res.status(400).send({ message: "Please upload a file!" });
                     }
-                    file_name = req.files[0].originalname
+                    file_name = req.file.originalname
                     var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
-                    var newPath = __basedir + problem_url + req.params.name + "/problem" + path.extname(file_name)
+                    var newPath = __basedir + problem_url + problem + "/problem" + path.extname(file_name)
                     fs.rename(oldPath, newPath, function (err) {
                       if (err) throw err
                     })
@@ -143,12 +155,12 @@ module.exports = function (app, database) {
                 
                     if (err.code == "LIMIT_FILE_SIZE") {
                       return res.status(500).send({
-                        message: "File size cannot be larger than 2MB!",
+                        message: "File size cannot be larger than 4MB!",
                       });
                     }
             
                     res.status(500).send({
-                      message: `Could not upload the file: ${req.files[0].originalname}. ${err}`,
+                      message: `Could not upload the file: ${req.file.originalname}. ${err}`,
                      });
                     }
             }
@@ -159,11 +171,17 @@ module.exports = function (app, database) {
         }
     })
 
-    app.get('/problem/download/:name',async (req, res) => {
-        
+    app.get('/problem/download/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
         if (req.session.username) {
             const fileName = "problem.pdf";
-            const directoryPath = __basedir + problem_url + req.params.name + "/"
+            const directoryPath = __basedir + problem_url + problem + "/"
+            if (!fs.existsSync(directoryPath + fileName)) {
+                res.send({ success: false, message: 'File không tồn tại' })
+                return
+            }
             res.download(directoryPath + fileName, fileName, (err) => {
                 if (err) {
                 res.status(500).send({
@@ -177,11 +195,17 @@ module.exports = function (app, database) {
         }
     })
 
-    app.get('/problem/show/:name',async (req, res) => {
-        
+    app.get('/problem/show/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
         if (req.session.username) {
             const fileName = "problem.pdf";
-            const directoryPath = __basedir + problem_url + req.params.name + "/"
+            const directoryPath = __basedir + problem_url + problem + "/"
+            if (!fs.existsSync(directoryPath + fileName)) {
+                res.send({ success: false, message: 'File không tồn tại' })
+                return
+            }
             res.contentType("application/pdf");
             fs.createReadStream(directoryPath + fileName).pipe(res)
         }
@@ -190,8 +214,11 @@ module.exports = function (app, database) {
         }
     })
 
-   app.post('/problem/input/upload/:name',async (req, res) => {
-    var oldPath = __basedir + problem_url + req.params.name
+   app.post('/problem/input/upload/:problemId',async (req, res) => {
+    problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+    if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+    problem = problem[0].problem_name
+    var oldPath = __basedir + problem_url + problem
     if (!fs.existsSync(oldPath)) {
         res.send({ success: false, message: 'File không tồn tại' })
         return
@@ -206,7 +233,7 @@ module.exports = function (app, database) {
                 for (i in req.files){
                     file_name = req.files[i].originalname
                     var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
-                    var newPath = __basedir + problem_url + req.params.name + "/input/" + i + path.extname(file_name)
+                    var newPath = __basedir + problem_url + problem + "/input/" + i + path.extname(file_name)
                     fs.rename(oldPath, newPath, function (err) {
                       if (err) throw err
                     })
@@ -232,8 +259,39 @@ module.exports = function (app, database) {
         }
     })
 
-    app.post('/problem/output/upload/:name',async (req, res) => {
-        var oldPath = __basedir + problem_url + req.params.name
+    app.get('/problem/input/download/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
+        if (req.session.username) {
+            if (req.session.role == 1){
+                const folderpath = __basedir + problem_url + problem + "/input"
+
+                var zp = new admz();
+                var to_zip = fs.readdirSync(folderpath)
+                for(var k=0 ; k<to_zip.length ; k++){
+                    zp.addLocalFile(folderpath+'/'+to_zip[k])
+                }
+                const file_after_download = problem + "_" + 'input.zip';
+                const data = zp.toBuffer();
+             
+                res.set('Content-Type','application/octet-stream');
+                res.set('Content-Disposition',`attachment; filename=${file_after_download}`);
+                res.set('Content-Length',data.length);
+                res.send(data);    
+            }
+            else res.send({ success: false, message: 'Không được cấp quyền' })
+        }
+        else {
+            res.send({ logged_in: false })
+            }
+    })
+
+    app.post('/problem/output/upload/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
+        var oldPath = __basedir + problem_url + problem
         if (!fs.existsSync(oldPath)) {
             res.send({ success: false, message: 'File không tồn tại' })
             return
@@ -248,7 +306,7 @@ module.exports = function (app, database) {
                     for (i in req.files){
                         file_name = req.files[i].originalname
                         var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
-                        var newPath = __basedir + problem_url + req.params.name + "/output/" + i + path.extname(file_name)
+                        var newPath = __basedir + problem_url + problem + "/output/" + i + path.extname(file_name)
                         fs.rename(oldPath, newPath, function (err) {
                           if (err) throw err
                         })
@@ -273,4 +331,32 @@ module.exports = function (app, database) {
             res.send({ logged_in: false })
         }
     })
+
+    app.get('/problem/output/download/:problemId',async (req, res) => {
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "File không tồn tại" });
+        problem = problem[0].problem_name
+        if (req.session.username) {
+            if (req.session.role == 1){
+                const folderpath = __basedir + problem_url + problem + "/output"
+
+                var zp = new admz();
+                var to_zip = fs.readdirSync(folderpath)
+                for(var k=0 ; k<to_zip.length ; k++){
+                    zp.addLocalFile(folderpath+'/'+to_zip[k])
+                }
+                const file_after_download = problem + "_" + 'output.zip';
+                const data = zp.toBuffer();
+             
+                res.set('Content-Type','application/octet-stream');
+                res.set('Content-Disposition',`attachment; filename=${file_after_download}`);
+                res.set('Content-Length',data.length);
+                res.send(data);    
+            }
+            else res.send({ success: false, message: 'Không được cấp quyền' })
+        }
+        else {
+            res.send({ logged_in: false })
+            }
+     })
 }

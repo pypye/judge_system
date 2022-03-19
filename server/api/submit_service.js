@@ -1,83 +1,96 @@
-const uploadFile = require("../middleware/upload");
 const fs = require("fs");
-const baseUrl = "http://localhost:3000/files/";
-
-const upload = async (req, res) => {
-  try {
-    await uploadFile(req, res);
-
-    if (req.file == undefined) {
-      return res.status(400).send({ message: "Please upload a file!" });
-    }
-
-    file_name = req.file.originalname
-    var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
-    var newPath = __basedir + "/resources/static/assets/uploads/submit/" 
-    if (!fs.existsSync(newPath)){
-      fs.mkdirSync(newPath);
-    }
-    newPath = newPath + file_name
-    fs.rename(oldPath, newPath, function (err) {
-      if (err) throw err
-        console.log('Successfully renamed - AKA moved!')
-    })
-    res.status(200).send({
-      message: "Uploaded the file successfully: " + file_name,
-    });
-  } catch (err) {
-    console.log(err);
-
-    if (err.code == "LIMIT_FILE_SIZE") {
-      return res.status(500).send({
-        message: "File size cannot be larger than 2MB!",
-      });
-    }
-
-    res.status(500).send({
-      message: `Could not upload the file: ${req.file.originalname}. ${err}`,
-    });
-  }
-};
-
-const getListFiles = (req, res) => {
-  const directoryPath = __basedir + "/resources/static/assets/uploads";
-
-  fs.readdir(directoryPath, function (err, files) {
-    if (err) {
-      res.status(500).send({
-        message: "Unable to scan files!",
-      });
-    }
-
-    let fileInfos = [];
-
-    files.forEach((file) => {
-      fileInfos.push({
-        name: file,
-        url: baseUrl + file,
-      });
-    });
-
-    res.status(200).send(fileInfos);
-  });
-};
-
-const download = (req, res) => {
-  const fileName = req.params.name;
-  const directoryPath = __basedir + "/resources/static/assets/uploads/submit/";
-
-  res.download(directoryPath + fileName, fileName, (err) => {
-    if (err) {
-      res.status(500).send({
-        message: "Could not download the file. " + err,
-      });
-    }
-  });
-};
+var path = require('path');
+const uploadFilePro = require("../middleware/upload_single");
+var sqlite = require("better-sqlite3");
+var db = new sqlite('./data/database.db');
+const readline = require('readline');
 
 module.exports = function (app, database) {
+  app.post('/submit/:userId/:problemId',async (req, res) => {
+    if (req.session.username){
+      if (req.session.cur == req.params.userId) {
+        username = db.prepare(`SELECT username FROM users WHERE id='${req.params.userId}'`).all()
+        if (username.length <=0) return res.status(400).send({ message: "user does not exist" });
+        username = username[0].username
+        problem = db.prepare(`SELECT problem_name FROM problems WHERE id='${req.params.problemId}'`).all()
+        if (problem.length <=0) return res.status(400).send({ message: "problem does not exist" });
+        problem = problem[0].problem_name
+        try {
+            await uploadFilePro(req, res);
+        
+            if (req.file == undefined) {
+              return res.status(400).send({ message: "Please upload a file!" });
+            }
+            
+        
+            file_name = req.file.originalname
+            time_submit = new Date().getTime()
+            submit_Id = req.params.userId + '_' + req.params.problemId + '_' + time_submit + path.extname(file_name)
+            var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
+            var newPath = __basedir + "/resources/static/assets/uploads/submit/" + submit_Id
+            fs.rename(oldPath, newPath, function (err) {
+              if (err) throw err
+            })
+            //chamdiem
+            score = 0
+            db.prepare(`INSERT INTO submit (id, user_id, problem_id, time, score) VALUES ('${submit_Id}',  '${req.params.userId}', '${req.params.problemId}',  '${time_submit}', '${score}')`).run()
 
-  app.post('/upload/submit', upload)
-  app.get('/submit', getListFiles)
-  app.get('/submit/download/:name', download)
+            res.status(200).send({
+              message: "Uploaded the file successfully",
+            });
+          } catch (err) {
+        
+            if (err.code == "LIMIT_FILE_SIZE") {
+              return res.status(500).send({
+                message: "File size cannot be larger than 4MB!",
+              });
+            }
+    
+            res.status(500).send({
+              message: `Could not upload the file: ${req.file.originalname}. ${err}`,
+              });
+            }
+      }
+      else {
+        res.send({ success: false, message: 'Không được cấp quyền' })
+      }
+    }
+    else {
+        res.send({ logged_in: false })
+    }
+})
+
+app.get('/submit/:problemId', (req, res) => {
+  if (req.session.username) {
+      if (req.session.role == 0) data = db.prepare(`SELECT * FROM submit WHERE user_id='${req.session.cur}' and problem_id='${req.params.problemId}'`).all()
+      else data = db.prepare(`select * FROM submit`).all()
+      res.status(200).send(data);
+  }
+  else {
+      res.send({ logged_in: false })
+  }
+})
+
+app.get('/submit/show/:submitId',async (req, res) => {
+  if (req.session.username) {
+      data = db.prepare(`SELECT * FROM submit WHERE id='${req.params.submitId}'`).all()
+      if (req.session.role ==1 || req.session.cur == data[0].userId){
+        const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submitId;
+        fs.readFile(fileName,"utf8" ,function(err, contents){
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(contents);
+          res.end();
+          });
+      }
+      else {
+        res.status(500).send({
+          message: `Không được cấp quyền`,
+          });
+        }
+      }
+  else {
+      res.send({ logged_in: false })
+  }
+})
+
 }
