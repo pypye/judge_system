@@ -53,11 +53,12 @@ DWORD createProcess(PROCESS_INFORMATION &processInfo, STARTUPINFOA &startupInfo,
     ZeroMemory(&processInfo, sizeof(processInfo));
     ZeroMemory(&startupInfo, sizeof(startupInfo));
     startupInfo.cb = sizeof(startupInfo);
-    startupInfo.dwFlags |= STARTF_USESTDHANDLES;
-    startupInfo.hStdInput = hInput;
-    startupInfo.hStdError = hOutput;
-    startupInfo.hStdOutput = hOutput;
-
+    if (hInput != NULL || hOutput != NULL) startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+    if (hInput != NULL) startupInfo.hStdInput = hInput;
+    if (hOutput != NULL) {
+        startupInfo.hStdError = hOutput;
+        startupInfo.hStdOutput = hOutput;
+    }
     char *cstr = new char[argv.length() + 1];
     strcpy(cstr, argv.c_str());
     if (!CreateProcessA(NULL, cstr, NULL, NULL, TRUE, 0, NULL, NULL, &startupInfo, &processInfo)) return GetLastError();
