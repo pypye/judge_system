@@ -50,9 +50,9 @@ const run = async (submission_id, test_input, stdin, stdout, timeLimit, memoryLi
         }
         if (!stdout) command += ` -o a.txt`
         var x = await exec(command, { cwd: submission_dir })
-        return x.stdout
+        return 0
     } catch (e) {
-        return e.code
+        return e
     }
 }
 const compare = async (file1, file2, method) => {
@@ -112,4 +112,4 @@ const judge = async (submission, problem, stdin, stdout, timeLimit, memoryLimit)
     clean_up(submission)
 }
 
-judge("delseg.cpp", "delseg", null, null, 1000, 1)
+judge("application.cpp", "application", "application.inp", "application.out", 1000, 256)

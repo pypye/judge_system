@@ -7,6 +7,8 @@
 
 using namespace std::chrono;
 using namespace std;
+int timeUsage = 0;
+int memoryUsage = 0;
 
 DWORD getExitCode(HANDLE &hProcess){
     DWORD exitCode = 0;
@@ -28,12 +30,15 @@ int getMaxMemoryUsage(PROCESS_INFORMATION &processInfo, int memoryLimit){
     do {
         currentMemoryUsage = getCurrentMemoryUsage(processInfo.hProcess);
         if (currentMemoryUsage > maxMemoryUsage) maxMemoryUsage = currentMemoryUsage;
-        if (memoryLimit != 0 && currentMemoryUsage > memoryLimit) TerminateProcess(processInfo.hProcess, -1);
+        if (memoryLimit != 0 && currentMemoryUsage > memoryLimit) {
+            TerminateProcess(processInfo.hProcess, -2);
+        }
     } while (getExitCode(processInfo.hProcess) == STILL_ACTIVE);
+    memoryUsage = min(max(memoryUsage, maxMemoryUsage), memoryLimit);
     return maxMemoryUsage;
 }
 
-DWORD runProcess(PROCESS_INFORMATION &processInfo, int timeLimit, int memoryLimit, int &timeUsage, int &memoryUsage){
+DWORD runProcess(PROCESS_INFORMATION &processInfo, int timeLimit, int memoryLimit){
     auto feature = async(launch::async, getMaxMemoryUsage, ref(processInfo), memoryLimit);
     ResumeThread(processInfo.hThread);
 
@@ -43,9 +48,13 @@ DWORD runProcess(PROCESS_INFORMATION &processInfo, int timeLimit, int memoryLimi
     timeUsage = duration_cast<milliseconds>(endTime - startTime).count();
     timeUsage = min(timeUsage, timeLimit);
 
-    if (getExitCode(processInfo.hProcess) == STILL_ACTIVE) TerminateProcess(processInfo.hProcess, -1);
-    memoryUsage = feature.get() / 1024;
-    memoryUsage = min(memoryUsage, memoryLimit);
+    if (getExitCode(processInfo.hProcess) == STILL_ACTIVE) {
+        TerminateProcess(processInfo.hProcess, -1);
+    }
+    // memoryUsage = feature.get() / 1024;
+    // memoryUsage = min(memoryUsage, memoryLimit);
+    printf("{time: %d, memory: %d, verdict: %s}", timeUsage, memoryUsage / 1024, GetLastError());
+  
     return getExitCode(processInfo.hProcess);
 }
 
@@ -93,7 +102,6 @@ int main(int argc, char *argv[]){
     HANDLE hInput = NULL;
     HANDLE hOutput = NULL;
     int timeLimit = 1000, memoryLimit = 256 * 1024;
-    int timeUsage = 0, memoryUsage = 0;
     string command;
     exitCode = prepare(argc, argv, command, hInput, hOutput, timeLimit, memoryLimit);
     if (exitCode) return exitCode;
@@ -101,9 +109,9 @@ int main(int argc, char *argv[]){
     exitCode = createProcess(processInfo, startupInfo, command, hInput, hOutput);
     if (exitCode) return exitCode;
 
-    exitCode = runProcess(processInfo, timeLimit, memoryLimit, timeUsage, memoryUsage);
+    exitCode = runProcess(processInfo, timeLimit, memoryLimit);
     if (exitCode) return exitCode;
 
-    printf("{time: %d, memory: %d}", timeUsage, memoryUsage);
+    printf("{time: %d, memory: %d, verdict: \"OK\"}", timeUsage, memoryUsage);
     return exitCode;
 }
