@@ -60,8 +60,8 @@ module.exports = function (app, database) {
     }
 })
 
-app.get('/submission/admin/all', (req, res) => {
-  if (req.session.username && req.session.role == 1) {
+app.get('/submission/all', (req, res) => {
+  if (req.session.username) {
       data = db.prepare(`select * FROM submit`).all()
       res.status(200).send(data);
   }
