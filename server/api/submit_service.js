@@ -3,7 +3,7 @@ var path = require('path');
 const uploadFilePro = require("../middleware/upload_single");
 var sqlite = require("better-sqlite3");
 var db = new sqlite('./data/database.db');
-const readline = require('readline');
+const randomHex = require('crypto-random-hex')
 
 module.exports = function (app, database) {
   app.post('/submit/:userId/:problemId',async (req, res) => {
@@ -22,18 +22,18 @@ module.exports = function (app, database) {
               return res.status(400).send({ message: "Please upload a file!" });
             }
             
-        
             file_name = req.file.originalname
             time_submit = new Date().getTime()
-            submit_Id = req.params.userId + '_' + req.params.problemId + '_' + time_submit + path.extname(file_name)
+            submit_Id = randomHex(4)
+            type = path.extname(file_name)
             var oldPath = __basedir + "/resources/static/assets/uploads/" + file_name
-            var newPath = __basedir + "/resources/static/assets/uploads/submit/" + submit_Id
+            var newPath = __basedir + "/resources/static/assets/uploads/submit/" + submit_Id + type
             fs.rename(oldPath, newPath, function (err) {
               if (err) throw err
             })
             //chamdiem
             score = 0
-            db.prepare(`INSERT INTO submit (id, user_id, problem_id, time, score) VALUES ('${submit_Id}',  '${req.params.userId}', '${req.params.problemId}',  '${time_submit}', '${score}')`).run()
+            db.prepare(`INSERT INTO submit (id, user_id, problem_id, type, time, score) VALUES ('${submit_Id}',  '${req.params.userId}', '${req.params.problemId}', '${type}', '${time_submit}', '${score}')`).run()
 
             res.status(200).send({
               message: "Uploaded the file successfully",
@@ -60,10 +60,9 @@ module.exports = function (app, database) {
     }
 })
 
-app.get('/submit/:problemId', (req, res) => {
-  if (req.session.username) {
-      if (req.session.role == 0) data = db.prepare(`SELECT * FROM submit WHERE user_id='${req.session.cur}' and problem_id='${req.params.problemId}'`).all()
-      else data = db.prepare(`select * FROM submit`).all()
+app.get('/submission/admin/all', (req, res) => {
+  if (req.session.username && req.session.role == 1) {
+      data = db.prepare(`select * FROM submit`).all()
       res.status(200).send(data);
   }
   else {
@@ -71,11 +70,31 @@ app.get('/submit/:problemId', (req, res) => {
   }
 })
 
-app.get('/submit/show/:submitId',async (req, res) => {
+app.get('/submission', (req, res) => {
+  if (req.session.username) {
+      data = db.prepare(`SELECT * FROM submit WHERE user_id='${req.session.cur}'`).all()
+      res.status(200).send(data);
+  }
+  else {
+      res.send({ logged_in: false })
+  }
+})
+
+app.get('/submission/:problemId', (req, res) => {
+  if (req.session.username) {
+      data = db.prepare(`SELECT * FROM submit WHERE user_id='${req.session.cur}' and problem_id='${req.params.problemId}'`).all()
+      res.status(200).send(data);
+  }
+  else {
+      res.send({ logged_in: false })
+  }
+})
+
+app.get('/submission/show/:submitId',async (req, res) => {
   if (req.session.username) {
       data = db.prepare(`SELECT * FROM submit WHERE id='${req.params.submitId}'`).all()
       if (req.session.role ==1 || req.session.cur == data[0].userId){
-        const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submitId;
+        const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submitId + data[0].type;
         fs.readFile(fileName,"utf8" ,function(err, contents){
           res.writeHead(200, {'Content-Type': 'text/plain'});
           res.write(contents);
