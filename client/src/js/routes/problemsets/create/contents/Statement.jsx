@@ -11,7 +11,8 @@ function Statement() {
     const { info, setInfo } = React.useContext(ProblemsetInfoContext)
     const [example, setExample] = React.useState({ inp: '', out: '' })
 
-    const onExampleChange = (type, value) => {
+    const onExampleChange = (e, type, value) => {
+        e.preventDefault();
         const temp = { ...example }
         temp[type] = value
         setExample(temp)
@@ -21,7 +22,7 @@ function Statement() {
         e.preventDefault();
         if (example.inp.trim() !== '' && example.out.trim() !== '') {
             const temp = { ...info }
-            temp.example.push(example)
+            temp.description.example.push(example)
             setExample({ inp: '', out: '' })
             setInfo(temp)
         }
@@ -31,7 +32,7 @@ function Statement() {
     const onExampleRemove = (e, key) => {
         e.preventDefault();
         const temp = { ...info }
-        temp.example.splice(key, 1)
+        temp.description.example.splice(key, 1)
         setInfo(temp)
     }
 
@@ -48,7 +49,7 @@ function Statement() {
                         <TableCellHead title="Action" />
                     </TableRow>
                     {
-                        info.example.map((value, key) => (
+                        info.description.example.map((value, key) => (
                             <React.Fragment key={key}>
                                 <TableRow>
                                     <TableCell padding="15px" align="left"><pre>{value.inp}</pre></TableCell>
@@ -59,8 +60,8 @@ function Statement() {
                         ))
                     }
                     <TableRow>
-                        <TableCell padding="15px"><textarea rows="5" type="text" value={example['inp']} onChange={(e) => onExampleChange('inp', e.target.value)} /></TableCell>
-                        <TableCell padding="15px"><textarea rows="5" type="text" value={example['out']} onChange={(e) => onExampleChange('out', e.target.value)} /></TableCell>
+                        <TableCell padding="15px"><textarea rows="5" type="text" value={example['inp']} onChange={(e) => onExampleChange(e, 'inp', e.target.value)} /></TableCell>
+                        <TableCell padding="15px"><textarea rows="5" type="text" value={example['out']} onChange={(e) => onExampleChange(e, 'out', e.target.value)} /></TableCell>
                         <TableCell><button className="btn-submit" onClick={(e) => onExampleCreate(e)}>Add</button></TableCell>
                     </TableRow>
                 </Table>

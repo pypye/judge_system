@@ -16,7 +16,7 @@ function ProblemsetStandings() {
     })
 
     return (
-        <div>
+        <React.Fragment>
             <Header />
             <SubNavigation />
             <Content>
@@ -32,7 +32,7 @@ function ProblemsetStandings() {
                     </LeftSideComponent>
                 </LeftSide>
             </Content>
-        </div>
+        </React.Fragment>
     )
 }
 export default ProblemsetStandings

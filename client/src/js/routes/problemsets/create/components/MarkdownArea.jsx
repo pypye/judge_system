@@ -14,7 +14,7 @@ function MarkdownArea(props) {
 
     const onInfoChange = (type, value) => {
         const items = { ...info }
-        items[type] = value
+        items.description[type] = value
         setInfo(items)
     }
 
@@ -22,9 +22,9 @@ function MarkdownArea(props) {
         <div className='flex-vertical'>
             <div>{props.title}</div>
             <MdEditor
-                style={{ height: props.height, overflow: "hidden" }}
+                style={{ height: props.height, overflow: "hidden" }} value={info.description[props.type]}
                 renderHTML={(text) => <MarkdownPreview remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} source={text} />}
-                onChange={({html, text}) => {onInfoChange(props.type, text)}}
+                onChange={({html, text}) => {onInfoChange(props.type, text)}} name=''
             />
         </div>
     )

@@ -6,7 +6,9 @@ const bodyParser = require("body-parser")
 const PORT = process.env.PORT || 3001;
 const app = express()
 const sqlite3 = require('sqlite3').verbose();
-const database = new sqlite3.Database('./data/database.db');   
+const database = new sqlite3.Database('./data/database.db');
+const fs = require("fs")
+
 global.__basedir = __dirname;
 
 app.use(cors({
@@ -22,10 +24,14 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }))
+const submit_queue = []
+require('./middleware/judger.js')(submit_queue, database)
 
-require('./api/session.js')(app, database)
-require('./api/problems_service.js')(app, database)
+require('./api/problems_service.js')(app, database, fs)
+require('./api/session_service.js')(app, database)
+require('./api/submit_service.js')(app, database, submit_queue)
 require('./api/user_service.js')(app, database)
-require('./api/submit_service.js')(app, database)
 
-app.listen(PORT, console.log(`Server started on port ${PORT}`));
+
+
+app.listen(PORT, console.log(`[Server] Started on port ${PORT}`));

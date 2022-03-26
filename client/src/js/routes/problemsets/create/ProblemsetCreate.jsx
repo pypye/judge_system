@@ -9,21 +9,32 @@ import General from './contents/General'
 import Publish from './contents/Publish'
 import { ProblemsetInfoContext } from '../../../context'
 import SubNavigation from '../../../components/headers/SubNavigation'
+import Axios from 'axios'
+import { useParams } from 'react-router-dom'
 
-function ProblemsetEdit() {
+function ProblemsetCreate(props) {
+    const { id } = useParams()
     const [info, setInfo] = React.useState({
-        name: '',
+        problem_code: '',
+        problem_name: '',
+        level: '',
+        description: { example: [], statement_main: "", statement_note: "" },
         file_input: 'stdin',
         file_output: 'stdout',
-        example: [],
         limit_time: 1000,
-        limit_memory: 256
+        limit_memory: 256,
+        tests: null
     });
 
 
     React.useEffect(() => {
         document.title = "Problemset - Add"
-    })
+        if (props.edit) {
+            Axios.get(`http://localhost:3001/problem?problem_code=${id}`, { withCredentials: true }).then(res => {
+                setInfo(res.data)
+            })
+        }
+    }, [props.edit, id])
 
     return (
         <ProblemsetInfoContext.Provider value={{ info, setInfo }}>
@@ -33,9 +44,9 @@ function ProblemsetEdit() {
                 <LeftSide width="100%">
                     <LeftSideComponent>
                         <form>
-                            <General />
+                            <General  edit={props.edit}/>
                             <Statement />
-                            <Publish />
+                            <Publish edit={props.edit}/>
                         </form>
 
                     </LeftSideComponent>
@@ -44,5 +55,5 @@ function ProblemsetEdit() {
         </ProblemsetInfoContext.Provider>
     )
 }
-export default ProblemsetEdit
+export default ProblemsetCreate
 

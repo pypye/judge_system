@@ -1,6 +1,9 @@
 import React from "react"
 
-const SessionContext = React.createContext()
+const SessionContext = React.createContext({
+    session: {},
+    setSession: () => { }
+})
 
 const ProblemsetInfoContext = React.createContext({
     info: {},

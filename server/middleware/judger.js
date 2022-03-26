@@ -2,27 +2,31 @@ const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 const fs = require('fs')
 
-const MIDDLEWARE_DIR = "server\\middleware"
-const DATA_DIR = "server\\data"
-const SUBMISSIONS_DIR = `${DATA_DIR}\\queue`
-const TESTS_DIR = `${DATA_DIR}\\Tasks`
+const MIDDLEWARE_DIR = "middleware"
+const DATA_DIR = "resources\\static\\assets\\uploads"
+const SUBMISSIONS_DIR = `${DATA_DIR}\\submit`
+const TESTS_DIR = `${DATA_DIR}\\problem`
 
 const COMPILERS_DIR = `${MIDDLEWARE_DIR}\\compilers`
 const CPP_COMPILER_DIR = `${COMPILERS_DIR}\\mingw\\bin\\g++`
 const WRAPPER = `${MIDDLEWARE_DIR}\\wrapper.exe`
 
-const parse = (submission_id) => {
-    submission_id = submission_id.split(".")
-    submission_id.pop()
-    submission_id = submission_id.join(".")
-    return submission_id
+var worker = 2
+const get_submission_src = (sid) => {
+    return `${SUBMISSIONS_DIR}\\${sid}`
 }
-const init = async (submission_id) => {
+const get_submission_des = (sid) => {
+    return `${MIDDLEWARE_DIR}\\env_${sid}`
+}
+const get_submission_path = (sid) => {
+    return `${get_submission_des(sid)}\\${sid}`
+}
+const init = async (sid) => {
     try {
-        let submission_src = `${SUBMISSIONS_DIR}\\${submission_id}`
-        let submission_des = `${MIDDLEWARE_DIR}\\env_${submission_id}`
+        let submission_src = get_submission_src(sid)
+        let submission_des = get_submission_des(sid)
         if (!fs.existsSync(submission_des)) await exec(`mkdir ${submission_des}`)
-        await exec(`copy ${submission_src}.cpp ${submission_des}\\${submission_id}.cpp`)
+        await exec(`copy ${submission_src}.cpp ${submission_des}\\${sid}.cpp`)
         return 0
     } catch (e) {
         return e.code
@@ -30,9 +34,9 @@ const init = async (submission_id) => {
 }
 
 
-const compile = async (submission_id) => {
+const compile = async (sid) => {
     try {
-        let submission_path = `${MIDDLEWARE_DIR}\\env_${submission_id}\\${submission_id}`
+        let submission_path = get_submission_path(sid)
         await exec(`${CPP_COMPILER_DIR} -o ${submission_path}.exe ${submission_path}.cpp`)
         return 0
     } catch (e) {
@@ -40,19 +44,19 @@ const compile = async (submission_id) => {
     }
 }
 
-const run = async (submission_id, test_input, stdin, stdout, timeLimit, memoryLimit) => {
+const run = async (sid, test_input, stdin, stdout, timeLimit, memoryLimit) => {
     try {
-        let submission_dir = `${MIDDLEWARE_DIR}\\env_${submission_id}`
-        var command = `..\\..\\..\\${WRAPPER} -t ${timeLimit} -m ${memoryLimit} ${submission_id}.exe`
-        if (!stdin) command += ` -i ..\\..\\..\\${test_input}`
+        let submission_des = get_submission_des(sid)
+        var command = `..\\..\\${WRAPPER} -t ${timeLimit} -m ${memoryLimit} ${sid}.exe`
+        if (!stdin) command += ` -i ..\\..\\${test_input}`
         else {
-            await exec(`copy ..\\..\\..\\${test_input} ${stdin}`, { cwd: submission_dir })
+            await exec(`copy ..\\..\\${test_input} ${stdin}`, { cwd: submission_des })
         }
         if (!stdout) command += ` -o a.txt`
-        var x = await exec(command, { cwd: submission_dir })
-        return 0
+        var x = await exec(command, { cwd: submission_des })
+        return { code: 0, details: JSON.parse(x.stdout) }
     } catch (e) {
-        return e
+        return { code: e.code, details: JSON.parse(e.stdout) }
     }
 }
 const compare = async (file1, file2, method) => {
@@ -62,54 +66,72 @@ const compare = async (file1, file2, method) => {
     } catch (e) {
         return e.code
     }
-
 }
 
-const clean_up = async(submission_id) => {
+const clean_up = async (sid) => {
     try {
-        await exec(`rmdir /s /q ${MIDDLEWARE_DIR}\\env_${submission_id}`)
+        await exec(`rmdir /s /q ${get_submission_des(sid)}`)
         return 0
-    } catch(e){
+    } catch (e) {
         return e.code
     }
 }
 
-const judge = async (submission, problem, stdin, stdout, timeLimit, memoryLimit) => {
-    submission = parse(submission)
-    var exitCode = 0;
-    exitCode = await init(submission)
+const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
+    var exitCode = 0
+    var point = 0, usage_time = 0, usage_memory = 0, test_count = 0
+    exitCode = await init(sid)
     if (exitCode) {
-        console.log("init error")
-        console.log("exit code", exitCode)
-        return { code: exitCode, verdict: 'Internal Error' }
+        return { point: 'Internal Error', usage_time: 0, usage_memory: 0 }
     }
-    exitCode = await compile(submission)
+    exitCode = await compile(sid)
     if (exitCode) {
-        console.log("compile error")
-        console.log("exit code", exitCode)
-        return { code: exitCode, verdict: "Compilation Error" }
+        return { point: "Compilation Error", usage_time: 0, usage_memory: 0 }
     }
 
-    problem_path = `${TESTS_DIR}\\${problem}`
+    problem_path = `${TESTS_DIR}\\${problem}\\${problem}`
     var g = fs.readdirSync(problem_path)
     for (let i = 0; i < g.length; i++) {
         var test = g[i]
-        console.log("test", g[i])
         if (fs.lstatSync(`${problem_path}\\${test}`).isDirectory()) {
-            var x2 = await run(submission, `${problem_path}\\${test}\\${problem}.inp`, stdin, stdout, timeLimit, memoryLimit)
-            console.log("run", x2)
-            if (x2) continue;
-            var x3;
+            test_count++
+            var dir = `${problem_path}\\${test}\\${problem}`
+
+            var _run = await run(sid, `${dir}.inp`, stdin, stdout, timeLimit, memoryLimit)
+            usage_time += _run.details.time
+            usage_memory += _run.details.memory
+            if (_run.code) continue
+            var _compare
             if (stdout) {
-                x3 = await compare(`${MIDDLEWARE_DIR}\\env_${submission}\\${stdout}`, `${problem_path}\\${test}\\${problem}.out`, "/w")
+                _compare = await compare(`${get_submission_des(sid)}\\${stdout}`, `${dir}.out`, "/w")
             } else {
-                x3 = await compare(`${MIDDLEWARE_DIR}\\env_${submission}\\a.txt`, `${problem_path}\\${test}\\${problem}.out`, "/w")
+                _compare = await compare(`${get_submission_des(sid)}\\a.txt`, `${dir}.out`, "/w")
             }
-            console.log("compr", x3)
+            if (_compare == 0) point += 1
         }
     }
-    console.log("ok")
-    clean_up(submission)
+    clean_up(sid)
+    return { point: `${point}/${test_count}`, usage_time: parseInt(usage_time / test_count), usage_memory: parseInt(usage_memory / test_count) }
 }
 
-judge("application.cpp", "application", "application.inp", "application.out", 1000, 256)
+const judge_process = async function (queue, database) {
+    if (queue.length && worker) {
+        worker--
+        var g = queue.shift()
+        console.log('[Judger] Judge', g.id)
+        var x = await judge(g.id, g.problem_code, null, null, 1000, 256)
+        await database.run(`UPDATE submissions SET verdict=?, usage_time=?, usage_memory=? WHERE id=?`, [x.point, x.usage_time, x.usage_memory, g.id], function (err) {
+            console.log('[Database] Error:', err)
+            console.log('[Database] Update score to database')
+        })
+        worker++
+        console.log('[Judger] Result', x)
+        console.log("[Judger] Current queue:", queue)
+    }
+}
+
+module.exports = function (queue, database) {
+    console.log("[Judger] Starting to create infinite process to judge")
+    setInterval(judge_process, 100, queue, database)
+    console.log("[Judger] Create infinite process to judge successfully")
+}

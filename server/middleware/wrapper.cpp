@@ -53,7 +53,7 @@ DWORD runProcess(PROCESS_INFORMATION &processInfo, int timeLimit, int memoryLimi
     }
     // memoryUsage = feature.get() / 1024;
     // memoryUsage = min(memoryUsage, memoryLimit);
-    printf("{time: %d, memory: %d, verdict: %s}", timeUsage, memoryUsage / 1024, GetLastError());
+    // printf("{time: %d, memory: %d, verdict: %s}", timeUsage, memoryUsage / 1024, GetLastError());
   
     return getExitCode(processInfo.hProcess);
 }
@@ -112,6 +112,6 @@ int main(int argc, char *argv[]){
     exitCode = runProcess(processInfo, timeLimit, memoryLimit);
     if (exitCode) return exitCode;
 
-    printf("{time: %d, memory: %d, verdict: \"OK\"}", timeUsage, memoryUsage);
+    printf("{\"time\": %d, \"memory\": %d}", timeUsage, memoryUsage / 1024);
     return exitCode;
 }

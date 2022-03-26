@@ -3,10 +3,10 @@ module.exports = function (app, database) {
     app.post('/login', (req, res) => {
         const username = req.body.username
         const password = req.body.password
-        database.all(`SELECT id, username, role FROM users WHERE username='${username}' AND password='${password}'`, function (err, data) {
+        database.all(`SELECT username, name, role FROM users WHERE username='${username}' AND password='${password}'`, function (err, data) {
             if (data[0]) {
-                req.session.cur = data[0].id
                 req.session.username = data[0].username
+                req.session.name = data[0].name
                 req.session.role = data[0].role
                 res.send({ success: true, message: 'Đăng nhập thành công' })
             } else {
@@ -20,6 +20,7 @@ module.exports = function (app, database) {
             res.send({
                 logged_in: true,
                 username: req.session.username,
+                name: req.session.name,
                 role: req.session.role
             })
         }

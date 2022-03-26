@@ -5,8 +5,8 @@ module.exports = function (app, database) {
             database.all(`SELECT * FROM users`, function (err, data) {
                 if (data) {
                     var res_user = []
-                    for (a of data){
-                        if (req.session.role == 1){
+                    for (a of data) {
+                        if (req.session.role == 1) {
                             obj = {
                                 username: a.username,
                                 role: a.role,
@@ -24,7 +24,7 @@ module.exports = function (app, database) {
                     res.send(res_user)
                 } else {
                     res.send({ success: false, message: 'error syntax' })
-                }   
+                }
             })
         }
         else {
@@ -38,7 +38,7 @@ module.exports = function (app, database) {
             database.all(`SELECT * FROM users WHERE id='${id_pro}'`, function (err, data) {
                 if (data.length != 0) {
                     a = data[0]
-                    if (req.session.role == 1){
+                    if (req.session.role == 1) {
                         obj = {
                             username: a.username,
                             role: a.role,
@@ -54,7 +54,7 @@ module.exports = function (app, database) {
                     res.send(obj)
                 } else {
                     res.send({ success: false, message: 'error syntax' })
-                }   
+                }
             })
         }
         else {
@@ -68,7 +68,7 @@ module.exports = function (app, database) {
         const password = req.body.password
         const role = req.body.role
         if (req.session.username) {
-            if (req.session.role == 1){
+            if (req.session.role == 1) {
                 database.all(`INSERT INTO users (username, password, role) VALUES ('${username}', '${password}', '${role}')`, function (err, data) {
                     res.send({ success: true, message: 'Thêm thành công' })
                 })
@@ -83,7 +83,7 @@ module.exports = function (app, database) {
     app.delete('/user', (req, res) => {
         if (req.session.username) {
             id_pro = req.query.id;
-            if (req.session.role == 1){
+            if (req.session.role == 1) {
                 database.run(`DELETE FROM users WHERE id=?`, id_pro, function (err) {
                     res.send({ success: true, message: 'Xóa thành công' })
                 })
@@ -102,9 +102,9 @@ module.exports = function (app, database) {
         if (req.session.username) {
             id_pro = req.query.id;
             let data = [password, id_pro]
-            database.all(`SELECT role FROM users WHERE id='${id_pro}'`, function (err, data){
+            database.all(`SELECT role FROM users WHERE id='${id_pro}'`, function (err, data) {
                 id_role = data[0].role
-                if ((req.session.role == 1 && id_role != 1)|| req.session.cur == id_pro){
+                if ((req.session.role == 1 && id_role != 1) || req.session.cur == id_pro) {
                     database.run(`UPDATE users SET password=? WHERE id=?`, data, function (err) {
                         res.send({ success: true, message: 'Sửa thành công' })
                     })

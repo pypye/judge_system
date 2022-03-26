@@ -9,14 +9,22 @@ import Table from '../../components/utils/Table'
 import TableRow from '../../components/utils/TableRow'
 import TableCell from '../../components/utils/TableCell'
 import TableCellHead from '../../components/utils/TableCellHead'
+import Axios from 'axios'
 
 function ProblemsetStatus() {
+    const [status, setStatus] = React.useState([])
     React.useEffect(() => {
         document.title = "Problemset - Status"
     })
 
+    React.useEffect(() => {
+        Axios.get("http://localhost:3001/submissions/all", { withCredentials: true }).then(res => {
+            setStatus(res.data)
+            console.log(res.data)
+        })
+    }, [])
     return (
-        <div>
+        <React.Fragment>
             <Header />
             <SubNavigation />
             <Content>
@@ -29,13 +37,29 @@ function ProblemsetStatus() {
                                 <TableCellHead title="Thí sinh" />
                                 <TableCellHead title="Tên bài" />
                                 <TableCellHead title="Kết quả" />
-                                <TableCellHead title="Chi tiết" />
+                                <TableCellHead title="Time" />
+                                <TableCellHead title="Memory" />
                             </TableRow>
+                            {
+                                status.map((value, key) => (
+                                    <React.Fragment key={key}>
+                                        <TableRow>
+                                            <TableCell padding='15px' title={value.id} />
+                                            <TableCell padding='15px' title={value.time_submit} />
+                                            <TableCell padding='15px' title={value.username} />
+                                            <TableCell padding='15px' title={value.problem_code} />
+                                            <TableCell padding='15px' title={value.verdict} />
+                                            <TableCell padding='15px' title={value.usage_time + ' ms'} />
+                                            <TableCell padding='15px' title={value.usage_memory + ' MB'} />
+                                        </TableRow>
+                                    </React.Fragment>
+                                ))
+                            }
                         </Table>
                     </LeftSideComponent>
                 </LeftSide>
             </Content>
-        </div>
+        </React.Fragment>
     )
 }
 export default ProblemsetStatus

@@ -16,9 +16,9 @@ function GeneralInfo(props) {
             <td>
                 <div>
                     <div>
-                        <input className="text-input"
+                        <input className="text-input" pattern={props.pattern}
                             type="text" value={info[props.type]}
-                            onChange={(e) => onInfoChange(props.type, e.target.value)} autoComplete='true' required/>
+                            onChange={(e) => onInfoChange(props.type, e.target.value)} autoComplete='true' disabled={props.no_edit} required/>
                         &nbsp;{props.ext}
                     </div>
                     <div className='text-annotation'>{props.annotation}</div>

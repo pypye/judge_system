@@ -1,8 +1,11 @@
 import React from "react"
 import Axios from "axios"
 import { useNavigate } from 'react-router-dom';
+import { SessionContext } from "../../context";
 
 function Login() {
+    const { setSession } = React.useContext(SessionContext)
+
     const [username, setUsername] = React.useState("")
     const [password, setPassword] = React.useState("")
     const [error, setError] = React.useState("")
@@ -26,7 +29,12 @@ function Login() {
             username: username,
             password: password
         }, { withCredentials: true }).then(res => {
-            if (res.data.success) navigate('', { replace: true })
+            if (res.data.success) {
+                Axios.get("http://localhost:3001/login", { withCredentials: true }).then(res => {
+                    setSession(res.data)
+                    navigate(window.location, { replace: true })
+                })
+            }
             else setError(res.data.message)
         })
     }

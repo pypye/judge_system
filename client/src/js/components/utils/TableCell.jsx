@@ -8,9 +8,7 @@ function TableCell(props) {
                     padding: (props.padding) ? props.padding : "0px"
                 }
             }>
-            <div className="table-cell-title">
-                {props.title}
-            </div>
+            {(props.href ? <a href={props.href}>{props.title}</a> : <div className="table-cell-title">{props.title}</div>)}
             <div className="table-cell-annotation">
                 {props.annotation}
             </div>

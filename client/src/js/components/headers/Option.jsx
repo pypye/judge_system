@@ -11,12 +11,17 @@ import { SessionContext } from "../../context"
 import React from "react"
 
 function Option() {
-    const session = React.useContext(SessionContext)
+    const { session, setSession } = React.useContext(SessionContext)
     const navigate = useNavigate()
-    
+
     const doLogout = () => {
         Axios.post("http://localhost:3001/logout", {}, { withCredentials: true }).then(res => {
-            if (res.data.success) navigate('/', {replace: true})
+            if (res.data.success) {
+                Axios.get("http://localhost:3001/login", { withCredentials: true }).then(res => {
+                    setSession(res.data)
+                    navigate('/', { replace: true })
+                })
+            }
         })
     }
 
