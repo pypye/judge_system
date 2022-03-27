@@ -56,7 +56,7 @@ const run = async (sid, test_input, stdin, stdout, timeLimit, memoryLimit) => {
         var x = await exec(command, { cwd: submission_des })
         return { code: 0, details: JSON.parse(x.stdout) }
     } catch (e) {
-        return { code: e.code, details: JSON.parse(e.stdout) }
+        return { code: e.code, details: JSON.parse(e.stdout)}
     }
 }
 const compare = async (file1, file2, method) => {
@@ -89,7 +89,7 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
         return { point: "Compilation Error", usage_time: 0, usage_memory: 0 }
     }
 
-    problem_path = `${TESTS_DIR}\\${problem}\\${problem}`
+    problem_path = `${TESTS_DIR}\\${problem}\\test`
     var g = fs.readdirSync(problem_path)
     for (let i = 0; i < g.length; i++) {
         var test = g[i]
@@ -98,8 +98,8 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
             var dir = `${problem_path}\\${test}\\${problem}`
 
             var _run = await run(sid, `${dir}.inp`, stdin, stdout, timeLimit, memoryLimit)
-            usage_time += _run.details.time
-            usage_memory += _run.details.memory
+            usage_time = Math.max(usage_time, _run.details.time)
+            usage_memory = Math.max(usage_memory, _run.details.memory)
             if (_run.code) continue
             var _compare
             if (stdout) {
@@ -111,7 +111,7 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
         }
     }
     clean_up(sid)
-    return { point: `${point}/${test_count}`, usage_time: parseInt(usage_time / test_count), usage_memory: parseInt(usage_memory / test_count) }
+    return { point: `${point}/${test_count}`, usage_time: usage_time, usage_memory: usage_memory }
 }
 
 const judge_process = async function (queue, database) {
@@ -132,6 +132,12 @@ const judge_process = async function (queue, database) {
 
 module.exports = function (queue, database) {
     console.log("[Judger] Starting to create infinite process to judge")
-    setInterval(judge_process, 100, queue, database)
-    console.log("[Judger] Create infinite process to judge successfully")
+    console.log("[Judger] Get last un-judged submission")
+    database.all(`SELECT * FROM submissions WHERE verdict = 'Inqueue'`, function(err, data) {
+        for (let i = 0; i < data.length; i++){
+            queue.push({id: data[i].id, time_submit: data[i], username: data[i].username, problem_code: data[i].problem_code, language: data[i].language})
+        }
+        setInterval(judge_process, 100, queue, database)
+        console.log("[Judger] Create infinite process to judge successfully")
+    })
 }

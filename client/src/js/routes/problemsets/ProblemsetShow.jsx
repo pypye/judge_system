@@ -33,7 +33,7 @@ function ProblemsetShow() {
             <Header />
             <SubNavigation />
             <Content>
-                <LeftSide width="80%">
+                <LeftSide>
                     <LeftSideComponent>
 
                         <div style={{ textAlign: "center" }}>
@@ -75,7 +75,7 @@ function ProblemsetShow() {
 
                     </LeftSideComponent>
                 </LeftSide>
-                <RightSide>
+                <RightSide width="25%">
                     <RightSideComponent>
                         <QuickSubmit />
                     </RightSideComponent>

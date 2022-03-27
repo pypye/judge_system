@@ -44,7 +44,7 @@ function Problemset() {
                         <Table>
                             <TableRow>
                                 <TableCellHead title="#" />
-                                <TableCellHead title="Tên bài" />
+                                <TableCellHead title="Name" />
                                 {session.role === 1 && <TableCellHead title="Action" />}
                             </TableRow>
                             {
@@ -53,7 +53,15 @@ function Problemset() {
                                         <TableRow>
                                             <TableCell padding="10px" title={key + 1} href={`/problemsets/problem/${value.problem_code}`} />
                                             <TableCell padding="10px" title={value.problem_name} href={`/problemsets/problem/${value.problem_code}`} />
-                                            {session.role === 1 && <TableCell padding="10px" ><button className="btn-submit" onClick={(e) => onModifyClick(e, value.problem_code)}>Modify</button></TableCell>}
+                                            {session.role === 1 &&
+                                                <TableCell padding="10px" >
+                                                    <div style={{ display: "flex", columnGap: "10px", justifyContent: "center" }}>
+                                                        <button className="btn-submit" style={{ margin: 0 }} onClick={(e) => onModifyClick(e, value.problem_code)}>Modify</button>
+                                                        <button className="btn-submit" style={{ margin: 0 }}>Delete</button>
+                                                    </div>
+
+                                                </TableCell>
+                                            }
                                         </TableRow>
                                     </React.Fragment>
                                 ))
@@ -62,7 +70,7 @@ function Problemset() {
                     </LeftSideComponent>
                 </LeftSide>
                 {session.role === 1 &&
-                    <RightSide>
+                    <RightSide width="25%">
                         <RightSideComponent>
                             <form action='/problemsets/create'>
                                 <button className='btn-submit' type='submit'>Create problemset</button>

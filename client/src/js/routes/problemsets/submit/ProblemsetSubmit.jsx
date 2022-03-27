@@ -25,7 +25,7 @@ function ProblemsetSubmit() {
                         <Submit />
                     </LeftSideComponent>
                 </LeftSide>
-                <RightSide>
+                <RightSide width="25%">
                     <RightSideComponent>
                         <QuickSubmit />
                     </RightSideComponent>

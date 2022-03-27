@@ -85,7 +85,7 @@ module.exports = function (app, database, submit_queue) {
         if (req.session.username) {
             data = db.prepare(`SELECT * FROM submissions WHERE id='${req.params.submissions_id}'`).all()
             if (req.session.role == 1 || req.session.username == data[0].username) {
-                const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submissions_id + data[0].type
+                const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submissions_id + data[0].language
                 fs.readFile(fileName, "utf8", function (err, contents) {
                     res.writeHead(200, { 'Content-Type': 'text/plain' })
                     res.write(contents)

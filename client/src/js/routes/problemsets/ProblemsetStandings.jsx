@@ -25,7 +25,7 @@ function ProblemsetStandings() {
                         <Table>
                             <TableRow>
                                 <TableCellHead title="#" />
-                                <TableCellHead title="Thí sinh" />
+                                <TableCellHead title="Who" />
                                 <TableCellHead title="=" />
                             </TableRow>
                         </Table>

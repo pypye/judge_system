@@ -22,10 +22,11 @@ function QuickSubmit() {
 
     return (
         <form>
-            <div className="text-heading">Submit solution from file</div>
+            <div className="text-heading">Quick submit</div>
             <input type="file" className="choose-file" accept=".cpp, .c, .java, .pas, .py" onChange={e => { setFile(e.target.files[0]) }} required />
             <p className="text-annotation">
-                File name: [Problem ID].[extension]<br></br>
+                File name format: [Problem ID].[extension]<br></br>
+                Example: problem1.cpp<br></br>
                 Max size: 1MB
             </p>
             <div><button type="submit" className="btn-submit" onClick={(e) => onSubmitClick(e)}>Submit</button></div>

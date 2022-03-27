@@ -51,10 +51,6 @@ DWORD runProcess(PROCESS_INFORMATION &processInfo, int timeLimit, int memoryLimi
     if (getExitCode(processInfo.hProcess) == STILL_ACTIVE) {
         TerminateProcess(processInfo.hProcess, -1);
     }
-    // memoryUsage = feature.get() / 1024;
-    // memoryUsage = min(memoryUsage, memoryLimit);
-    // printf("{time: %d, memory: %d, verdict: %s}", timeUsage, memoryUsage / 1024, GetLastError());
-  
     return getExitCode(processInfo.hProcess);
 }
 
@@ -104,13 +100,22 @@ int main(int argc, char *argv[]){
     int timeLimit = 1000, memoryLimit = 256 * 1024;
     string command;
     exitCode = prepare(argc, argv, command, hInput, hOutput, timeLimit, memoryLimit);
-    if (exitCode) return exitCode;
+    if (exitCode) {
+        printf("{\"time\": %d, \"memory\": %d}", timeUsage, memoryUsage / 1024);
+        return exitCode;
+    }
 
     exitCode = createProcess(processInfo, startupInfo, command, hInput, hOutput);
-    if (exitCode) return exitCode;
+    if (exitCode) {
+        printf("{\"time\": %d, \"memory\": %d}", timeUsage, memoryUsage / 1024);
+        return exitCode;
+    }
 
     exitCode = runProcess(processInfo, timeLimit, memoryLimit);
-    if (exitCode) return exitCode;
+    if (exitCode) {
+        printf("{\"time\": %d, \"memory\": %d}", timeUsage, memoryUsage / 1024);
+        return exitCode;
+    }
 
     printf("{\"time\": %d, \"memory\": %d}", timeUsage, memoryUsage / 1024);
     return exitCode;

@@ -65,7 +65,7 @@
 
 .dropdown-component-title {
     font-weight: var(--text-bold);
-    color: var(--text-main-color);
+    color: var(--text-color-primary);
 }
 
 
@@ -152,6 +152,20 @@ table tr th {
 
 .btn-submit:hover {
     cursor: pointer;
+}
+
+.popup-div {
+    padding: 16px 24px;
+}
+
+.popup-content {
+    border-radius: var(--border-radius);
+    padding: 5px;
+    width: 1000px;
+    min-height: 70%;
+    max-height: 90%;
+    max-width: 90%;
+    overflow: auto;
 }
 
 .debug {
