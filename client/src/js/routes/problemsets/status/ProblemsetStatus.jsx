@@ -47,13 +47,17 @@ function ProblemsetStatus() {
                                     <React.Fragment key={key}>
                                         <TableRow>
                                             <TableCell padding='6px'>
-                                                <a href='/#' onClick={(e) => {e.preventDefault();setPreviewSolution(value.id)}} style={{textDecoration: "underline", color: 'blue'}}>{value.id}</a>
+                                                <a href='/#' onClick={(e) => { e.preventDefault(); setPreviewSolution(value.id) }} style={{ textDecoration: "underline", color: 'blue' }}>{value.id}</a>
                                             </TableCell>
-                                            <TableCell padding='6px' title={value.time_submit} />
+                                            <TableCell padding='6px' title={new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(value.time_submit)} />
                                             <TableCell padding='6px' title={value.username} />
                                             <TableCell padding='6px' title={value.problem_code} />
                                             <TableCell padding='6px' title={value.language} />
-                                            <TableCell padding='6px' title={value.verdict} />
+                                            <TableCell padding='6px'>
+                                                <div style={{ fontWeight: 500, color: value.verdict === 'Compilation Error' ? 'red' : 'green' }}>
+                                                    {value.verdict}
+                                                </div>
+                                            </TableCell>
                                             <TableCell padding='6px' title={value.usage_time + ' ms'} />
                                             <TableCell padding='6px' title={value.usage_memory + ' MB'} />
                                         </TableRow>

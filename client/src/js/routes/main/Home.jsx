@@ -3,6 +3,7 @@ import Header from "../../components/headers/Header"
 import LeftSide from "../../components/contents/LeftSide"
 import LeftSideComponent from "../../components/contents/LeftSideComponent"
 import React from "react"
+import CreatePost from './CreatePost'
 
 function Home() {
     React.useEffect(() => {
@@ -15,7 +16,10 @@ function Home() {
             <Content>
                 <LeftSide width="100%">
                     <LeftSideComponent>
-                        this is home page
+                        <div className="text-heading">Welcome to Judge System, you can create post about prolemset here.</div>
+                    </LeftSideComponent>
+                    <LeftSideComponent>
+                        <CreatePost/>
                     </LeftSideComponent>
                 </LeftSide>
             </Content>

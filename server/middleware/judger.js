@@ -80,13 +80,18 @@ const clean_up = async (sid) => {
 const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
     var exitCode = 0
     var point = 0, usage_time = 0, usage_memory = 0, test_count = 0
+    var log_detail = []
     exitCode = await init(sid)
     if (exitCode) {
-        return { point: 'Internal Error', usage_time: 0, usage_memory: 0 }
+        var ret = { verdict: 'Internal Error', usage_time: 0, usage_memory: 0 }
+        fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: [], log_total: ret}))
+        return ret
     }
     exitCode = await compile(sid)
     if (exitCode) {
-        return { point: "Compilation Error", usage_time: 0, usage_memory: 0 }
+        var ret = { verdict: 'Compilation Error', usage_time: 0, usage_memory: 0 }
+        fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: [], log_total: ret}))
+        return ret
     }
 
     problem_path = `${TESTS_DIR}\\${problem}\\test`
@@ -96,11 +101,14 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
         if (fs.lstatSync(`${problem_path}\\${test}`).isDirectory()) {
             test_count++
             var dir = `${problem_path}\\${test}\\${problem}`
-
+            
             var _run = await run(sid, `${dir}.inp`, stdin, stdout, timeLimit, memoryLimit)
             usage_time = Math.max(usage_time, _run.details.time)
             usage_memory = Math.max(usage_memory, _run.details.memory)
-            if (_run.code) continue
+            if (_run.code) {
+                log_detail.push({test_name: test, exit_code: _run.code, time: _run.details.time, memory: _run.details.memory, point: 0, test_point: 1})
+                continue
+            }
             var _compare
             if (stdout) {
                 _compare = await compare(`${get_submission_des(sid)}\\${stdout}`, `${dir}.out`, "/w")
@@ -108,10 +116,13 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
                 _compare = await compare(`${get_submission_des(sid)}\\a.txt`, `${dir}.out`, "/w")
             }
             if (_compare == 0) point += 1
+            log_detail.push({test_name: test, exit_code: _compare, time: _run.details.time, memory: _run.details.memory, point: (_compare == 0) ? 1 : 0, test_point: 1})
         }
     }
     clean_up(sid)
-    return { point: `${point}/${test_count}`, usage_time: usage_time, usage_memory: usage_memory }
+    var ret = { verdict: `${point}/${test_count}`, usage_time: usage_time, usage_memory: usage_memory }
+    fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: log_detail, log_total: ret}))
+    return ret
 }
 
 const judge_process = async function (queue, database) {
@@ -120,7 +131,7 @@ const judge_process = async function (queue, database) {
         var g = queue.shift()
         console.log('[Judger] Judge', g.id)
         var x = await judge(g.id, g.problem_code, null, null, 1000, 256)
-        await database.run(`UPDATE submissions SET verdict=?, usage_time=?, usage_memory=? WHERE id=?`, [x.point, x.usage_time, x.usage_memory, g.id], function (err) {
+        await database.run(`UPDATE submissions SET verdict=?, usage_time=?, usage_memory=? WHERE id=?`, [x.verdict, x.usage_time, x.usage_memory, g.id], function (err) {
             console.log('[Database] Error:', err)
             console.log('[Database] Update score to database')
         })

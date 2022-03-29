@@ -28,7 +28,7 @@ module.exports = function (app, database, submit_queue) {
                     if (err) throw err
                 })
                 db.prepare(`INSERT INTO submissions (id, time_submit, username, problem_code, language, usage_time, usage_memory, verdict) VALUES ('${submit_id}', '${time_submit}', '${req.session.username}', '${problem}', '${type}', 0, 0, 'Inqueue')`).run()
-                submit_queue.push({id: submit_id, time_submit: time_submit, username: req.session.username, problem_code: problem, language: type})
+                submit_queue.push({ id: submit_id, time_submit: time_submit, username: req.session.username, problem_code: problem, language: type })
                 res.status(200).send({
                     message: "Uploaded the file successfully",
                 })
@@ -97,6 +97,26 @@ module.exports = function (app, database, submit_queue) {
                     message: `Không được cấp quyền`,
                 })
             }
+        }
+        else {
+            res.send({ logged_in: false })
+        }
+    })
+
+    app.get('/submissions/log/:submissions_id', async (req, res) => {
+        if (req.session.username) {
+            const fileName = __basedir + "/resources/static/assets/uploads/submit/" + req.params.submissions_id + "_log.txt"
+            fs.readFile(fileName, "utf8", function (err, contents) {
+                if (err) {
+                    res.status(500).send({message: "Not found log"})
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'application/json' })
+                    res.write(contents)
+                    res.end()
+                }
+
+            })
+
         }
         else {
             res.send({ logged_in: false })

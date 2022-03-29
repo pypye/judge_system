@@ -147,7 +147,7 @@ table tr th {
     padding: var(--button-padding);
     color: var(--background-secondary);
     display: flex;
-    margin: 0 auto;
+    margin: var(--margin) auto;
 }
 
 .btn-submit:hover {

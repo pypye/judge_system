@@ -1,6 +1,6 @@
 import { AiFillHome } from 'react-icons/ai'
 import { IoNewspaperOutline } from 'react-icons/io5'
-import { BsFillGrid3X3GapFill } from 'react-icons/bs'
+import { BsCodeSlash, BsFillGrid3X3GapFill } from 'react-icons/bs'
 import { GrUserAdmin } from 'react-icons/gr'
 import NavigationComponent from './NavigationComponent'
 import Dropdown from '../utils/Dropdown'
@@ -16,13 +16,15 @@ function Navigation(props) {
             <div className="nav">
                 <NavigationComponent path="/" title="Home" uppercase />
                 <NavigationComponent path="/problemsets" title="Problemsets" uppercase />
-                {session.role === 1 && <NavigationComponent path="/admin" title="Management" uppercase />}
+                <NavigationComponent path="/ide" title="IDE" uppercase />
+                {session.role === 1 && <NavigationComponent path="/manage" title="Manage" uppercase />}
             </div>
             <div className="nav-dropdown">
                 <Dropdown trigger={<Icon><BsFillGrid3X3GapFill /></Icon>} drop="center">
                     <DropdownComponent title="Home" icon={<AiFillHome />} href='/' />
                     <DropdownComponent title="Problemsets" icon={<IoNewspaperOutline />} href='/problemsets' />
-                    {session.role === 1 && <DropdownComponent title="Management" icon={<GrUserAdmin />} href="/admin" />}
+                    <DropdownComponent title="IDE" icon={<BsCodeSlash />} href='/ide' />
+                    {session.role === 1 && <DropdownComponent title="Manage" icon={<GrUserAdmin />} href="/manage" />}
                 </Dropdown>
             </div>
 
