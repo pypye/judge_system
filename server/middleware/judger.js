@@ -29,6 +29,7 @@ const init = async (sid) => {
         await exec(`copy ${submission_src}.cpp ${submission_des}\\${sid}.cpp`)
         return 0
     } catch (e) {
+        console.log(e)
         return e.code
     }
 }

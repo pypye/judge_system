@@ -31,7 +31,6 @@ require('./api/problems_service.js')(app, database, fs)
 require('./api/session_service.js')(app, database)
 require('./api/submit_service.js')(app, database, submit_queue)
 require('./api/user_service.js')(app, database)
-
-
+require('./api/forum_service.js')(app, database)
 
 app.listen(PORT, console.log(`[Server] Started on port ${PORT}`));
