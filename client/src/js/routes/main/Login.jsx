@@ -42,7 +42,7 @@ function Login() {
     return (
         <div className="login-background">
             <div className="login-border">
-                <div className="text-heading">Welcom to Chyoj</div>
+                <div className="text-heading">Welcom to PhoCF Judge System</div>
                 <form className="login-form" onSubmit={onSubmit}>
                     <input className="text-input login-input" placeholder="Username" type="text" onChange={onUsernameChange} required />
                     <input className="text-input login-input" placeholder="Password" type="password" onChange={onPasswordChange} autoComplete="on" required />

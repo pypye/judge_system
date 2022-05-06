@@ -15,7 +15,7 @@ function Home() {
             <Content>
                 <LeftSide width="100%">
                     <LeftSideComponent>
-                        <div className="text-heading">Welcome to Judge System.</div>
+                        <div className="text-heading">Welcome to PhoCF Judge System.</div>
                     </LeftSideComponent>
                 </LeftSide>
             </Content>
