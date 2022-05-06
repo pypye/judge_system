@@ -8,9 +8,9 @@ module.exports = function (app, database) {
                 req.session.username = data[0].username
                 req.session.name = data[0].name
                 req.session.role = data[0].role
-                res.send({ success: true, message: 'Đăng nhập thành công' })
+                res.send({ success: true, message: 'Login succesfully' })
             } else {
-                res.send({ success: false, message: 'Thông tin tài khoản hoặc mật khẩu không chính xác' })
+                res.send({ success: false, message: 'Username and password does not match' })
             }
         })
     })

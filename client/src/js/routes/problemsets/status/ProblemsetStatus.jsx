@@ -12,18 +12,51 @@ import TableCellHead from '../../../components/utils/TableCellHead'
 import Axios from 'axios'
 import PreviewSolution from './PreviewSolution'
 
+import { io } from "socket.io-client"
+import { SessionContext } from '../../../context'
+
 function ProblemsetStatus() {
     const [status, setStatus] = React.useState([])
     const [previewSolution, setPreviewSolution] = React.useState(null)
+    const { session } = React.useContext(SessionContext)
+
+    const socket = React.useRef()
+
     React.useEffect(() => {
         document.title = "Problemset - Status"
     })
 
     React.useEffect(() => {
-        Axios.get("http://localhost:3001/submissions/all", { withCredentials: true }).then(res => {
+        socket.current = io("ws://localhost:8900")
+        if (session.logged_in) {
+            socket.current.on(`push-status-` + session.username, data => {
+                setStatus(prev => [data, ...prev]);
+            })
+
+            socket.current.on("get-status-" + session.username, data => {
+                setStatus((prev) =>
+                    prev.map((row) => (row.id === data.id ? {
+                        id: row.id,
+                        time_submit: row.time_submit,
+                        problem_code: row.problem_code,
+                        language: row.language,
+                        verdict: data.verdict,
+                        usage_time: data.usage_time,
+                        usage_memory: data.usage_memory
+                    } : row))
+                )
+            })
+        }
+
+    }, [session])
+
+    React.useEffect(() => {
+        Axios.get("http://localhost:3001/submissions", { withCredentials: true }).then(res => {
             setStatus(res.data)
         })
     }, [])
+
+
     return (
         <React.Fragment>
             <Header />
@@ -35,7 +68,6 @@ function ProblemsetStatus() {
                             <TableRow>
                                 <TableCellHead title="#" />
                                 <TableCellHead title="When" />
-                                <TableCellHead title="Who" />
                                 <TableCellHead title="Problem" />
                                 <TableCellHead title="Language" />
                                 <TableCellHead title="Verdict" />
@@ -50,11 +82,13 @@ function ProblemsetStatus() {
                                                 <a href='/#' onClick={(e) => { e.preventDefault(); setPreviewSolution(value.id) }} style={{ textDecoration: "underline", color: 'blue' }}>{value.id}</a>
                                             </TableCell>
                                             <TableCell padding='6px' title={new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(value.time_submit)} />
-                                            <TableCell padding='6px' title={value.username} />
                                             <TableCell padding='6px' title={value.problem_code} />
                                             <TableCell padding='6px' title={value.language} />
                                             <TableCell padding='6px'>
-                                                <div style={{ fontWeight: 500, color: value.verdict === 'Compilation Error' ? 'red' : 'green' }}>
+                                                <div style={{
+                                                    fontWeight: value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 0 : 500,
+                                                    color: value.verdict.includes('Error') ? 'red': (value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 'gray' : 'green')
+                                                }}>
                                                     {value.verdict}
                                                 </div>
                                             </TableCell>

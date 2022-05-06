@@ -10,7 +10,7 @@
     box-shadow: var(--box-shadow);
     border-radius: var(--border-radius);
     position: fixed;
-    width: 300px;
+    width: 350px;
     padding: var(--padding);
     left: 50%;
     top: 50%;

@@ -77,19 +77,22 @@ const clean_up = async (sid) => {
     }
 }
 
-const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
+const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit, io, username) => {
     var exitCode = 0
     var point = 0, usage_time = 0, usage_memory = 0, test_count = 0
     var log_detail = []
+    io.emit('get-status-' + username, { id: sid, verdict: `Judging`, usage_time: 0, usage_memory: 0 })
     exitCode = await init(sid)
     if (exitCode) {
         var ret = { verdict: 'Internal Error', usage_time: 0, usage_memory: 0 }
+        io.emit('get-status-' + username, { id: sid, verdict: 'Internal Error', usage_time: 0, usage_memory: 0 })
         fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: [], log_total: ret}))
         return ret
     }
     exitCode = await compile(sid)
     if (exitCode) {
         var ret = { verdict: 'Compilation Error', usage_time: 0, usage_memory: 0 }
+        io.emit('get-status-' + username, { id: sid, verdict: 'Compilation Error', usage_time: 0, usage_memory: 0 })
         fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: [], log_total: ret}))
         return ret
     }
@@ -98,6 +101,7 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
     var g = fs.readdirSync(problem_path)
     for (let i = 0; i < g.length; i++) {
         var test = g[i]
+        io.emit('get-status-' + username, { id: sid, verdict: `Running on test ${i}`, usage_time: 0, usage_memory: 0 })
         if (fs.lstatSync(`${problem_path}\\${test}`).isDirectory()) {
             test_count++
             var dir = `${problem_path}\\${test}\\${problem}`
@@ -121,16 +125,18 @@ const judge = async (sid, problem, stdin, stdout, timeLimit, memoryLimit) => {
     }
     clean_up(sid)
     var ret = { verdict: `${point}/${test_count}`, usage_time: usage_time, usage_memory: usage_memory }
+    io.emit('get-status-' + username, { id: sid, verdict: `${point}/${test_count}`, usage_time: usage_time, usage_memory: usage_memory })
     fs.writeFileSync(get_submission_src(sid) + "_log.txt", JSON.stringify({log_detail: log_detail, log_total: ret}))
     return ret
 }
 
-const judge_process = async function (queue, database) {
+const judge_process = async function (queue, database, io) {
     if (queue.length && worker) {
         worker--
         var g = queue.shift()
         console.log('[Judger] Judge', g.id)
-        var x = await judge(g.id, g.problem_code, null, null, 1000, 256)
+        io.emit("push-status-" + g.username, { id: g.id, time_submit: g.time_submit, problem_code: g.problem_code, language: g.language, verdict: `Inqueue`, usage_time: 0, usage_memory: 0 })
+        var x = await judge(g.id, g.problem_code, null, null, 1000, 256, io, g.username)
         await database.run(`UPDATE submissions SET verdict=?, usage_time=?, usage_memory=? WHERE id=?`, [x.verdict, x.usage_time, x.usage_memory, g.id], function (err) {
             console.log('[Database] Error:', err)
             console.log('[Database] Update score to database')
@@ -141,14 +147,14 @@ const judge_process = async function (queue, database) {
     }
 }
 
-module.exports = function (queue, database) {
+module.exports = function (queue, database, io) {
     console.log("[Judger] Starting to create infinite process to judge")
     console.log("[Judger] Get last un-judged submission")
     database.all(`SELECT * FROM submissions WHERE verdict = 'Inqueue'`, function(err, data) {
         for (let i = 0; i < data.length; i++){
             queue.push({id: data[i].id, time_submit: data[i], username: data[i].username, problem_code: data[i].problem_code, language: data[i].language})
         }
-        setInterval(judge_process, 100, queue, database)
+        setInterval(judge_process, 100, queue, database, io)
         console.log("[Judger] Create infinite process to judge successfully")
     })
 }

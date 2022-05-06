@@ -1,7 +1,7 @@
 import Dropdown from "../utils/Dropdown"
 import DropdownComponent from "../utils/DropdownComponent"
 import NavigationComponent from "./NavigationComponent"
-import { IoMoon, IoLogOut } from 'react-icons/io5'
+import { IoLogOut } from 'react-icons/io5'
 import { MdHelp } from 'react-icons/md'
 import { AiFillCaretDown } from 'react-icons/ai'
 import { useNavigate } from "react-router-dom"
@@ -27,11 +27,9 @@ function Option() {
 
     return (
         <div className="option">
-            <NavigationComponent path="profile" title={session.name} />
-
+            <NavigationComponent path="#" title={session.name} />
             <Dropdown trigger={<Icon><AiFillCaretDown /></Icon>} drop="right">
                 <DropdownComponent title="About" annotation="Questions..." icon={<MdHelp />} />
-                <DropdownComponent title="Dark mode" annotation="Off" icon={<IoMoon />} />
                 <DropdownComponent title="Log out" icon={<IoLogOut />} onClick={doLogout} />
             </Dropdown>
 

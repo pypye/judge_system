@@ -1,5 +1,9 @@
 import Axios from "axios"
 import React from "react"
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const swal = withReactContent(Swal)
 
 function QuickSubmit() {
 
@@ -9,14 +13,26 @@ function QuickSubmit() {
         e.preventDefault()
         const data = new FormData()
         data.append("file", file)
-        Axios.post(`http://localhost:3001/submit/${file.name.split(".")[0].toLowerCase()}`, data, { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } })
+        Axios.post(`http://localhost:3001/submit/quick/${file.name.split(".")[0].toLowerCase()}`, data, { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } })
             .then(res => {
-                if (!alert(res.data.message)) {
+                swal.fire({
+                    title: <strong>Success</strong>,
+                    html: res.data.message,
+                    icon: 'success',
+                }).then(function(){
                     document.location = '/problemsets/status'
-                }
+                })
             })
-            .catch(res => {
-                alert(res.response.data.message)
+            .catch(err => {
+                swal.fire({
+                    title: <strong>Error</strong>,
+                    html: err.response.data.message,
+                    icon: 'error'
+                }).then(function(){
+                    if(err.response.data.message === 'Please login first'){
+                        document.location = ''
+                    }
+                })
             })
     }
 

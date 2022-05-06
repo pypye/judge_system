@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>312312
+#include <bits/stdc++.h>
 #define FOR(i, a, b) for(int i = a; i <= b; i++)
 #define FORR(i, a, b) for(int i = a; i >= b; i--)
 #define maxn 100005
@@ -23,6 +23,5 @@ int main()
         if(check(mid)) r = mid;
         else l = mid;
     }
-    cout << 0/0;
     printf("%lld", r);
 }

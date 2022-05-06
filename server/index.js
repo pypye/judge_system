@@ -24,8 +24,15 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }))
+const io = require("socket.io")(8900, {
+    cors: {
+        origin: "*",
+        credentials: true
+    }
+});
+
 const submit_queue = []
-require('./middleware/judger.js')(submit_queue, database)
+require('./middleware/judger.js')(submit_queue, database, io)
 
 require('./api/problems_service.js')(app, database, fs)
 require('./api/session_service.js')(app, database)

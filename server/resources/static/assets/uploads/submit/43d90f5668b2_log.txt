@@ -1,1 +1,0 @@
-{"log_detail":[],"log_total":{"verdict":"Compilation Error","usage_time":0,"usage_memory":0}}

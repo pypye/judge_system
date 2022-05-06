@@ -24,6 +24,14 @@ textarea {
     width: 95%;
 }
 
+html {
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
 :root {
     --debug-border: 1px solid black;
 

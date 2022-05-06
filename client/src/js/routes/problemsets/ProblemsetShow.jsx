@@ -24,10 +24,8 @@ function ProblemsetShow() {
         document.title = `Problem - ${id}`
         Axios.get(`http://localhost:3001/problem?problem_code=${id}`, { withCredentials: true }).then(res => {
             setProblem(res.data)
-            console.log(res.data)
-        }
-        )
-    }, [])
+        })
+    }, [id])
     return (
         <React.Fragment>
             <Header />
@@ -67,7 +65,7 @@ function ProblemsetShow() {
                             </React.Fragment>
                         }
                         {
-                            problem.description.statement_note !== null && <React.Fragment>
+                            (problem.description.statement_note !== null && problem.description.statement_note !== '') && <React.Fragment>
                                 <h4>Note</h4>
                                 <MarkdownPreview remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} source={problem.description.statement_note} />
                             </React.Fragment>

@@ -1,5 +1,4 @@
 module.exports = function (app, database) {
-
     app.get('/users', (req, res) => {
         if (req.session.username) {
             database.all(`SELECT * FROM users`, function (err, data) {
@@ -22,14 +21,10 @@ module.exports = function (app, database) {
                         res_user.push(obj)
                     }
                     res.send(res_user)
-                } else {
-                    res.send({ success: false, message: 'error syntax' })
-                }
+                } else res.status(400).send({ message: 'Syntax error' })
             })
         }
-        else {
-            res.send({ logged_in: false })
-        }
+        else res.status(400).send({ message: 'Please login first' })
     })
 
     app.get('/user', (req, res) => {
@@ -57,27 +52,22 @@ module.exports = function (app, database) {
                 }
             })
         }
-        else {
-            res.send({ logged_in: false })
-        }
+        else res.status(400).send({ message: 'Please login first' })
     })
 
     app.post('/user', (req, res) => {
-
         const username = req.body.username
         const password = req.body.password
         const role = req.body.role
         if (req.session.username) {
             if (req.session.role == 1) {
                 database.all(`INSERT INTO users (username, password, role) VALUES ('${username}', '${password}', '${role}')`, function (err, data) {
-                    res.send({ success: true, message: 'Thêm thành công' })
+                    res.send({ message: 'Add user sucessfully' })
                 })
             }
-            else res.send({ success: false, message: 'Không được cấp quyền' })
+            else res.status(400).send({ message: 'Only admin can access' })
         }
-        else {
-            res.send({ logged_in: false })
-        }
+        else res.status(400).send({ message: 'Please login first' })
     })
 
     app.delete('/user', (req, res) => {
@@ -85,19 +75,16 @@ module.exports = function (app, database) {
             id_pro = req.query.id;
             if (req.session.role == 1) {
                 database.run(`DELETE FROM users WHERE id=?`, id_pro, function (err) {
-                    res.send({ success: true, message: 'Xóa thành công' })
+                    res.send({ message: 'Delete user sucessfully' })
                 })
             }
-            else res.send({ success: false, message: 'Không được cấp quyền' })
+            else res.status(400).send({ message: 'Only admin can access' })
         }
-        else {
-            res.send({ logged_in: false })
-        }
+        else res.status(400).send({ message: 'Please login first' })
     })
 
     // http://localhost:3001/user?id=3
     app.put('/user', (req, res) => {
-
         const password = req.body.password
         if (req.session.username) {
             id_pro = req.query.id;
@@ -106,15 +93,13 @@ module.exports = function (app, database) {
                 id_role = data[0].role
                 if ((req.session.role == 1 && id_role != 1) || req.session.cur == id_pro) {
                     database.run(`UPDATE users SET password=? WHERE id=?`, data, function (err) {
-                        res.send({ success: true, message: 'Sửa thành công' })
+                        res.send({ message: 'Modify user successfully' })
                     })
                 }
-                else res.send({ success: false, message: 'Không được cấp quyền' })
+                else res.status(400).send({ message: 'Only admin can access' })
             })
 
         }
-        else {
-            res.send({ logged_in: false })
-        }
+        else res.status(400).send({ message: 'Please login first' })
     })
 }

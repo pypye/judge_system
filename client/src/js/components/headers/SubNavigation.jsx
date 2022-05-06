@@ -6,8 +6,7 @@ function SubNavigation() {
             <div className="sub-nav">
                 <NavigationComponent path="/problemsets" title="Problems" />
                 <NavigationComponent path="/problemsets/submit" title="Submit" />
-                <NavigationComponent path="/problemsets/status" title="Status" />
-                <NavigationComponent path="/problemsets/standings" title="Standings" />
+                <NavigationComponent path="/problemsets/status" title="Submission History" />
             </div>
         </div>
 
