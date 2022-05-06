@@ -87,7 +87,7 @@ function ProblemsetStatus() {
                                             <TableCell padding='6px'>
                                                 <div style={{
                                                     fontWeight: value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 0 : 500,
-                                                    color: value.verdict.includes('Error') ? 'red': (value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 'gray' : 'green')
+                                                    color: value.verdict.includes('Error') ? 'red'                                                                                                                                      : (value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 'gray' : 'green')
                                                 }}>
                                                     {value.verdict}
                                                 </div>

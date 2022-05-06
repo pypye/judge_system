@@ -9,6 +9,7 @@ import ProblemsetSubmit from './routes/problemsets/submit/ProblemsetSubmit'
 import ProblemsetCreate from './routes/problemsets/create/ProblemsetCreate'
 import { SessionContext } from './context'
 import ProblemsetShow from './routes/problemsets/ProblemsetShow'
+import Manage from './routes/manage/Manage'
 
 function App() {
     const [session, setSession] = React.useState(null)
@@ -16,11 +17,11 @@ function App() {
         { path: '/', component: <Home /> },
         { path: '/problemsets', component: <Problemset /> },
         { path: '/problemsets/problem/:id', component: <ProblemsetShow /> },
-        
         { path: '/problemsets/submit', component: <ProblemsetSubmit /> },
         { path: '/problemsets/status', component: <ProblemsetStatus /> },
         { path: '/problemsets/create', component: <ProblemsetCreate />, admin: true },
-        { path: '/problemsets/problem/:id/edit', component: <ProblemsetCreate edit/>, admin: true }
+        { path: '/problemsets/problem/:id/edit', component: <ProblemsetCreate edit />, admin: true },
+        { path: '/manage', component: <Manage />, admin: true }
     ]
 
     React.useEffect(() => {
