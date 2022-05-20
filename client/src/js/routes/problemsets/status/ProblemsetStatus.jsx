@@ -83,7 +83,7 @@ function ProblemsetStatus() {
                                             </TableCell>
                                             <TableCell padding='6px' title={new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(value.time_submit)} />
                                             <TableCell padding='6px' title={value.problem_code} />
-                                            <TableCell padding='6px' title={value.language} />
+                                            <TableCell padding='6px' title={value.language.toLowerCase()} />
                                             <TableCell padding='6px'>
                                                 <div style={{
                                                     fontWeight: value.verdict.includes('Inqueue') || value.verdict.includes('Judging') || value.verdict.includes('Running') ? 0 : 500,

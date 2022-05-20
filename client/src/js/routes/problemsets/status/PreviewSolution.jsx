@@ -29,7 +29,7 @@ function PreviewSolution({ id, setId }) {
                         {log.log_detail.map((value, key) => (
                             <React.Fragment key={key}>
                                 <tr>
-                                    <td style={{padding: "3px"}}>{value.test_name}:</td>
+                                    <td style={{padding: "3px"}}>Test{key+1}:</td>
                                     <td style={{padding: "3px"}}>
                                         <div style={{ color: verdict[value.exit_code] ? verdict[value.exit_code][1] : '#dd8f00', fontWeight: 500 }}>
                                             {verdict[value.exit_code] ? verdict[value.exit_code][0] : 'Runtime Error'}

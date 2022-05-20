@@ -39,7 +39,7 @@ function QuickSubmit() {
     return (
         <form>
             <div className="text-heading">Quick submit</div>
-            <input type="file" className="choose-file" accept=".cpp, .c, .java, .pas, .py" onChange={e => { setFile(e.target.files[0]) }} required />
+            <input type="file" className="choose-file" accept=".cpp, .c" onChange={e => { setFile(e.target.files[0]) }} required />
             <p className="text-annotation">
                 File name format: [Problem ID].[extension]<br></br>
                 Example: problem1.cpp<br></br>

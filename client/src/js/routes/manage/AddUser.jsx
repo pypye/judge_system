@@ -27,7 +27,7 @@ function AddUser({ username, setUsername }) {
             Axios.post(`http://localhost:3001/user`, user, { withCredentials: true }).then(res => {
                 swal.fire({
                     title: <strong>Success</strong>,
-                    html: <div>Modify user success</div>,
+                    html: <div>Add user success</div>,
                     icon: 'success',
                 }).then(function () {
                     document.location = '/manage'

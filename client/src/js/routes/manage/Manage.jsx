@@ -108,7 +108,7 @@ function Manage() {
                                             <TableCell padding="10px" title={key + 1} />
                                             <TableCell padding="10px" title={value.username} />
                                             <TableCell padding="10px" title={value.name} />
-                                            <TableCell padding="10px" title={value.role} />
+                                            <TableCell padding="10px" title={value.role == 1 ? 'Administrator' : 'Student'} />
                                             <TableCell padding="10px" >
                                                 <div style={{ display: "flex", columnGap: "10px", justifyContent: "center" }}>
                                                     <button className="btn-submit" style={{ margin: 0 }} onClick={(e) => onModifyClick(e, value.username)}>Modify</button>

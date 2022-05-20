@@ -9,6 +9,7 @@ module.exports = function (app, database, submit_queue) {
     app.post('/submit/quick/:problem_code', async (req, res) => {
         if (req.session.username) {
             problem = db.prepare(`SELECT problem_code FROM problems WHERE problem_code='${req.params.problem_code}'`).all()
+            console.log(req.params.problem_code)
             if (problem.length <= 0) return res.status(400).send({ message: "Problem does not exist" })
             problem = problem[0].problem_code
             try {
